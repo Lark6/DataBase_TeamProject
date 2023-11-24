@@ -1,15 +1,15 @@
-// user_model.dart
+// models/user.dart
 
 class User {
-  int? id;
-  late String username;
-  late String password;
-  late String realName;
-  late String profileMessage;
-  late String gender;
-  late String birthday;
-  late int followers;
-  late int following;
+  int? id; // 사용자 식별자
+  String username; // 사용자 아이디
+  String password; // 사용자 비밀번호
+  String realName; // 사용자 실명
+  String profileMessage; // 사용자 프로필 메시지
+  String gender; // 사용자 성별
+  String birthday; // 사용자 생년월일
+  int followers; // 팔로워 수
+  int following; // 팔로잉 수
 
   User({
     this.id,
@@ -22,7 +22,6 @@ class User {
     required this.followers,
     required this.following,
   });
-
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -36,7 +35,6 @@ class User {
       'following': following,
     };
   }
-
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
       id: map['id'],
@@ -50,5 +48,4 @@ class User {
       following: map['following'],
     );
   }
-
 }

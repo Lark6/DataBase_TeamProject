@@ -1,10 +1,11 @@
 // pages/login_page.dart
 
 import 'package:flutter/material.dart';
-import 'package:twitter_clone/models/user.dart';
-
-import '../models/database_Helper.dart';
-
+import 'package:path_provider/path_provider.dart';
+import 'package:twitter_clone/DB/database_Helper.dart';
+import 'package:twitter_clone/DB/user.dart';
+import 'signup_page.dart';
+import 'main_page.dart'; // 메인페이지 import
 
 class LoginPage extends StatelessWidget {
   final TextEditingController _usernameController = TextEditingController();
@@ -60,27 +61,43 @@ class LoginPage extends StatelessWidget {
       // 로그인 성공
       // 여기에서 다음 화면으로 이동하거나 필요한 작업을 수행하세요.
       print('로그인 성공: ${user.username}');
+      WidgetsFlutterBinding.ensureInitialized();
+      final directory = await getApplicationDocumentsDirectory();
+      print(directory.path);
+      
+      // 메인페이지로 이동
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MainPage()),
+      );
     } else {
       // 로그인 실패
-      print('로그인 실패');
+      // 경고창 표시
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('로그인 실패'),
+            content: Text('아이디 또는 비밀번호가 올바르지 않습니다.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // 경고창 닫기
+                },
+                child: Text('확인'),
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 
   Future<void> _handleSignUp(BuildContext context) async {
-    String username = _usernameController.text.trim();
-    String password = _passwordController.text.trim();
-
-    User newUser = User(username: username, password: password, realName: '', profileMessage: '', gender: '', birthday: '', followers:0 , following:0 );
-    DatabaseHelper dbHelper = DatabaseHelper.instance;
-    int userId = await dbHelper.insertUser(newUser);
-
-    if (userId > 0) {
-      // 회원가입 성공
-      // 여기에서 다음 화면으로 이동하거나 필요한 작업을 수행하세요.
-      print('회원가입 성공: $username');
-    } else {
-      // 회원가입 실패
-      print('회원가입 실패');
-    }
+    // 회원 가입 버튼을 누를 때, 회원 가입 페이지로 이동
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SignupPage()),
+    );
   }
 }

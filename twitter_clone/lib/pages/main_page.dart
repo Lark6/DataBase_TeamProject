@@ -1,178 +1,116 @@
+// main_page.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:sqflite/sqlite_api.dart';
+import 'package:twitter_clone/DB/database_Helper.dart';
+import 'package:twitter_clone/DB/post.dart';
+import 'package:twitter_clone/models/authmodel.dart';
+import 'package:twitter_clone/pages/login_page.dart';
 
 class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Flutter Twitter Clone'),
+        title: Text('트위터 클론'),
         actions: [
           IconButton(
-            icon: Icon(Icons.search),
+            icon: Icon(Icons.logout),
             onPressed: () {
-              // 검색 기능 추가
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.mail),
-            onPressed: () {
-              // 메시지 기능 추가
+              // 로그아웃 기능을 구현하세요
+              Provider.of<AuthModel>(context, listen: false).logout();
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (context) => LoginPage(),
+              ));
             },
           ),
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CircleAvatar(
-                    radius: 30,
-                    // 여기에 사용자 프로필 이미지를 가져오는 코드 추가
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    // 여기에 사용자 이름을 가져오는 코드 추가
-                    'User Name',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                  ),
-                  Text(
-                    // 여기에 사용자 아이디 또는 추가 정보를 가져오는 코드 추가
-                    '@username',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.person),
-              title: Text('프로필'),
-              onTap: () {
-                // 프로필 화면으로 이동
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.list),
-              title: Text('리스트'),
-              onTap: () {
-                // 리스트 화면으로 이동
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('설정'),
-              onTap: () {
-                // 설정 화면으로 이동
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.exit_to_app),
-              title: Text('로그아웃'),
-              onTap: () {
-                // 로그아웃 기능 추가
-              },
-            ),
-          ],
-        ),
-      ),
-      body: ListView.builder(
-        itemCount: 10,
-        itemBuilder: (context, index) {
-          return _buildTweetCard(context, index);
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _showTweetDialog(context);
-        },
-        child: Icon(Icons.edit),
-      ),
-    );
-  }
-
-  Widget _buildTweetCard(BuildContext context, int index) {
-    // 여기에 트윗 카드를 생성하는 코드 추가
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 트윗 내용, 작성자 정보, 이미지 등을 표시하는 코드 추가
-            Text(
-              '트윗 내용 $index',
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '작성자 $index',
-                  style: TextStyle(color: Colors.grey),
-                ),
-                IconButton(
-                  icon: Icon(Icons.favorite_border),
-                  onPressed: () {
-                    // 좋아요 기능 추가
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-
-  void _showTweetDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('새로운 트윗 작성'),
-          content: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                decoration: InputDecoration(labelText: '트윗 내용'),
-                maxLines: 3,
-              ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () async {
-                  // 여기에 트윗 작성 로직 추가
-                  final content = '입력한 내용'; // 실제로는 사용자 입력 내용을 가져와야 함
-
-                  // 여기에 SQLite 데이터베이스에 트윗을 저장하는 로직 추가
-                  // 저장 후 화면을 갱신할 수 있도록 추가한 트윗을 리스트에 추가하거나 다시 불러옴
-
-                  Navigator.pop(context); // 다이얼로그 닫기
-                },
-                child: Text('작성'),
-              ),
-            ],
+      body: Column(
+        children: [
+          TweetInput(),
+          Divider(), // 각 트윗을 구분하기 위한 Divider
+          Expanded(
+            child: TweetList(),
           ),
-        );
+        ],
+      ),
+    );
+  }
+}
+
+class TweetInput extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: TextField(
+        decoration: InputDecoration(
+          hintText: '지금 무슨 일이 일어나고 있나요?',
+          border: OutlineInputBorder(),
+        ),
+        // TODO: 텍스트 입력 및 트윗 전송 로직을 추가하세요
+      ),
+    );
+  }
+}
+class TweetList extends StatelessWidget {
+  Future<List<Post>> fetchPosts() async {
+    DatabaseHelper dbHelper = DatabaseHelper.instance;
+    List<Post> tweets = [];
+
+    // TODO: 실제 데이터베이스에서 데이터 가져오기
+    Database db = await dbHelper.database;
+    List<Map<String, dynamic>> postMaps = await db.query('posts', orderBy: 'created_at DESC');
+
+    for (var postMap in postMaps) {
+      tweets.add(Post(
+        content: postMap['content'],
+        author: '사용자', // 사용자 정보도 가져와야 함
+        likes: postMap['like_count'], 
+        timestamp: null,
+      ));
+    }
+
+    return tweets;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Post>>(
+      future: fetchPosts(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('데이터를 불러오는 중 오류가 발생했습니다.');
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Text('포스트가 없습니다.');
+        } else {
+          return ListView.builder(
+            itemCount: snapshot.data!.length,
+            itemBuilder: (context, index) {
+              return TweetItem(tweet: snapshot.data![index], post: null,);
+            },
+          );
+        }
       },
     );
   }
 }
 
+class TweetItem extends StatelessWidget {
+  final Post post;
 
+  TweetItem({required this.post, required Post tweet});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(post.content),
+      subtitle: Text('작성자: 사용자 | 작성일: ${post.createdAt} | 좋아요: ${post.likeCount}'),
+      // 추가적인 트윗 정보 및 기능...
+    );
+  }
+}
 
