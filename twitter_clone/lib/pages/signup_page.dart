@@ -1,5 +1,3 @@
-// pages/signup_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:twitter_clone/DB/database_Helper.dart';
 import 'package:twitter_clone/DB/user.dart';
@@ -71,7 +69,7 @@ class SignupPage extends StatelessWidget {
       bool isUserExist = await dbHelper.isUserExists(username);
       if (isUserExist) {
         // 동일한 아이디로 가입이 불가능한 경우
-        print('이미 존재하는 아이디입니다. 다른 아이디를 사용해주세요.');
+        _showAlertDialog(context, '회원 가입 실패', '이미 존재하는 아이디입니다. 다른 아이디를 사용해주세요.');
         return;
       }
 
@@ -92,6 +90,7 @@ class SignupPage extends StatelessWidget {
         // 회원가입 성공
         // 여기에서 다음 화면으로 이동하거나 필요한 작업을 수행하세요.
         print('회원가입 성공: $username');
+        _showAlertDialog(context, '회원 가입 성공', '회원 가입이 성공적으로 완료되었습니다.');
 
         // 회원가입 성공 후 초기 로그인 페이지로 이동
         Navigator.pushReplacement(
@@ -100,11 +99,33 @@ class SignupPage extends StatelessWidget {
         );
       } else {
         // 회원가입 실패
+        _showAlertDialog(context, '회원 가입 실패', '회원 가입 중 오류가 발생했습니다.');
         print('회원가입 실패');
       }
     } else {
       // 아이디 또는 비밀번호가 비어있는 경우
+      _showAlertDialog(context, '입력 오류', '아이디와 비밀번호를 모두 입력하세요.');
       print('아이디와 비밀번호를 모두 입력하세요.');
     }
+  }
+
+  void _showAlertDialog(BuildContext context, String title, String content) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('확인'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

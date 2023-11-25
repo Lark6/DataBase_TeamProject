@@ -18,7 +18,7 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'your_database_name.db');
+    String path = join(await getDatabasesPath(), 'your_database_name.db'); //로컬 데이터 베이스 파일 이용
     return await openDatabase(
       path,
       version: 1,
@@ -159,5 +159,23 @@ class DatabaseHelper {
   post.createdAt = DateTime.now().toUtc().toIso8601String(); // 현재 타임스탬프 설정
   return await db.insert('posts', post.toMap());
   }
+
+
+  // getUserById 메소드 추가
+  Future<User> getUserById(int userId) async {
+  final Database db = await database;
+  List<Map<String, dynamic>> maps = await db.query(
+    'users',
+    where: 'id = ?',
+    whereArgs: [userId],
+  );
+
+  if (maps.isNotEmpty) {
+    return User.fromMap(maps.first);
+  } else {
+    // 사용자를 찾지 못한 경우에 대한 처리
+    throw Exception('해당 ID의 사용자를 찾을 수 없습니다.');
+  }
+}
   // ... (다른 메소드들)
 }

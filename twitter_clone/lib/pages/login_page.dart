@@ -52,32 +52,34 @@ class LoginPage extends StatelessWidget {
 
   Future<void> _handleLogin(BuildContext context) async {
     String username = _usernameController.text.trim();
-    String password = _passwordController.text.trim();
+  String password = _passwordController.text.trim();
 
-    DatabaseHelper dbHelper = DatabaseHelper.instance;
-    User? user = await dbHelper.getUser(username, password);
+  DatabaseHelper dbHelper = DatabaseHelper.instance;
+  User? user = await dbHelper.getUser(username, password);
 
-    if (user != null) {
-      // 로그인 성공
-      // 여기에서 다음 화면으로 이동하거나 필요한 작업을 수행하세요.
-      print('로그인 성공: ${user.username}');
-      WidgetsFlutterBinding.ensureInitialized();
-      final directory = await getApplicationDocumentsDirectory();
-      print(directory.path);
-      
-      // 메인페이지로 이동
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MainPage()),
-      );
-    } else {
+  if (user != null) {
+    // 로그인 성공
+    // 여기에서 다음 화면으로 이동하거나 필요한 작업을 수행하세요.
+    print('로그인 성공: ${user.username}');
+    WidgetsFlutterBinding.ensureInitialized();
+    final directory = await getApplicationDocumentsDirectory();
+    print(directory.path);
+
+    // 메인페이지로 이동하면서 사용자 정보 전달
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MainPage(currentUser: user),
+      ),
+    );
+  }else {
       // 로그인 실패
       // 경고창 표시
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('로그인 실패'),
+            title: const Text('로그인 실패'),
             content: Text('아이디 또는 비밀번호가 올바르지 않습니다.'),
             actions: [
               TextButton(
@@ -94,10 +96,12 @@ class LoginPage extends StatelessWidget {
   }
 
   Future<void> _handleSignUp(BuildContext context) async {
+    
     // 회원 가입 버튼을 누를 때, 회원 가입 페이지로 이동
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => SignupPage()),
     );
+    
   }
 }
