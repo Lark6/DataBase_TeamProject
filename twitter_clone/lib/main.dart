@@ -1,11 +1,12 @@
 // main.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'models/auth_model.dart';
+import 'package:twitter_clone/models/authmodel.dart';
 import 'pages/login_page.dart';
 import 'pages/main_page.dart';
 
 void main() {
+  
   runApp(MyApp());
 }
 
