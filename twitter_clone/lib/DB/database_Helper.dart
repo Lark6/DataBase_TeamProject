@@ -32,42 +32,42 @@ class DatabaseHelper
 
   Future<void> _createTable(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE User (
+      CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL,
         password TEXT NOT NULL,
+        realName TEXT,
         profileMessage TEXT,
         gender TEXT,
         birthday TEXT,
         followers INTEGER,
         following INTEGER
-      );
+      )
     ''');
 
     await db.execute('''
-      CREATE TABLE Post (
+      CREATE TABLE posts (
         post_id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
-        post_content TEXT,
-        post_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)       
-      );
-    ''');
-
-    await db.execute('''
-      CREATE TABLE Comment (
-        comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        post_id INTEGER,
-        comment_content TEXT,
-        comment_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (post_id) REFERENCES posts(post_id)
+        content TEXT,
+        created_at TEXT,
+        like_count INTEGER,
         FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE comments (
+        comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER,
+        content TEXT,
+        created_at TEXT,
+        FOREIGN KEY (post_id) REFERENCES posts(post_id)
       );
     ''');
 
     await db.execute('''
-      CREATE TABLE Reply (
+      CREATE TABLE replies (
         reply_id INTEGER PRIMARY KEY AUTOINCREMENT,
         comment_id INTEGER,
         content TEXT,
@@ -76,7 +76,7 @@ class DatabaseHelper
     ''');
 
     await db.execute('''
-      CREATE TABLE Follow (
+      CREATE TABLE follows (
         follow_id INTEGER PRIMARY KEY AUTOINCREMENT,
         follower_id INTEGER,
         following_id INTEGER,
@@ -86,7 +86,7 @@ class DatabaseHelper
     ''');
 
     await db.execute('''
-      CREATE TABLE Like (
+      CREATE TABLE likes (
         post_id INTEGER,
         user_id INTEGER,
         like_count INTEGER,
@@ -96,18 +96,46 @@ class DatabaseHelper
       );
     ''');
 
+    await db.execute('''
+      CREATE TABLE profile (
+        user_id INTEGER PRIMARY KEY,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      );
+    ''');
+
+    await db.execute('''
+      CREATE TABLE following (
+        follow_id INTEGER PRIMARY KEY,
+        user_id INTEGER,
+        following_id INTEGER,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (following_id) REFERENCES users(id)
+      );
+    ''');
+
+    await db.execute('''
+      CREATE TABLE followers (
+        follow_id INTEGER PRIMARY KEY,
+        user_id INTEGER,
+        follower_id INTEGER,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (follower_id) REFERENCES users(id)
+      );
+    ''');
   }
 
-  Future<int> insertUser(User user) async //유저 추가 회원 가입에서 사용 메소드
-  {
+  Future<int> insertUser(User user) async {
     Database db = await instance.database;
     return await db.insert('users', user.toMap());
   }
 
-  Future<User?> getUser(String username, String password) async //로그인을 위한 아이디 비밀번호 호출 메소드
-  {
+  Future<User?> getUser(String username, String password) async {
     Database db = await instance.database;
-    List<Map<String, dynamic>> maps = await db.query('users',where: 'username = ? AND password = ?',whereArgs: [username, password],);
+    List<Map<String, dynamic>> maps = await db.query(
+      'users',
+      where: 'username = ? AND password = ?',
+      whereArgs: [username, password],
+    );
 
     if (maps.isNotEmpty) {
       // 데이터베이스에서 사용자를 찾은 경우
@@ -118,16 +146,21 @@ class DatabaseHelper
     }
   }
 
-  Future<bool> isUserExists(String username) async //동일한 아이디가 존재하는지 확인하는 메소드
-  {
+  Future<bool> isUserExists(String username) async {
     final Database db = await database;
-    final List<Map<String, dynamic>> result = await db.query('users',where: 'username = ?',whereArgs: [username],);
+    final List<Map<String, dynamic>> result = await db.query(
+      'users',
+      where: 'username = ?',
+      whereArgs: [username],
+    );
+
     return result.isNotEmpty;
   }
 
-  Future<int> insertPost(Post post) async 
-  {
+
+  Future<int> insertPost(Post post) async {
   Database db = await instance.database;
+  post.createdAt = DateTime.now().toUtc().toIso8601String(); // 현재 타임스탬프 설정
   return await db.insert('posts', post.toMap());
   }
 

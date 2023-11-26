@@ -76,6 +76,7 @@ class SignupPage extends StatelessWidget {
       User newUser = User(
         username: username,
         password: password,
+        realName: realName,
         profileMessage: '',
         gender: gender,
         birthday: '',

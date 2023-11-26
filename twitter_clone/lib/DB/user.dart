@@ -4,6 +4,7 @@ class User {
   int? id; // 사용자 식별자
   String username; // 사용자 아이디
   String password; // 사용자 비밀번호
+  String realName; // 사용자 실명
   String profileMessage; // 사용자 프로필 메시지
   String gender; // 사용자 성별
   String birthday; // 사용자 생년월일
@@ -14,6 +15,7 @@ class User {
     this.id,
     required this.username,
     required this.password,
+    required this.realName,
     required this.profileMessage,
     required this.gender,
     required this.birthday,
@@ -25,6 +27,7 @@ class User {
       'id': id,
       'username': username,
       'password': password,
+      'realName': realName,
       'profileMessage': profileMessage,
       'gender': gender,
       'birthday': birthday,
@@ -37,6 +40,7 @@ class User {
       id: map['id'],
       username: map['username'],
       password: map['password'],
+      realName: map['realName'],
       profileMessage: map['profileMessage'],
       gender: map['gender'],
       birthday: map['birthday'],
