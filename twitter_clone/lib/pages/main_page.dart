@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqlite_api.dart';
 import 'package:twitter_clone/DB/database_Helper.dart';
-import 'package:twitter_clone/DB/post.dart';
-import 'package:twitter_clone/DB/user.dart';
+import 'package:twitter_clone/DB/Post.dart';
+import 'package:twitter_clone/DB/User.dart';
 import 'package:twitter_clone/models/authmodel.dart';
 import 'package:twitter_clone/pages/login_page.dart';
 
@@ -64,14 +64,13 @@ class _PostingState extends State<Posting>
   final TextEditingController _textEditingController = TextEditingController();
 
   @override
-  Widget build(BuildContext context) 
-  {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          TextField
-          (
+  Widget build(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Row(
+      children: [
+        Expanded(
+          child: TextField(
             controller: _textEditingController,
             decoration: InputDecoration(hintText: 'Write everything what you want', border: OutlineInputBorder(),),
           ),

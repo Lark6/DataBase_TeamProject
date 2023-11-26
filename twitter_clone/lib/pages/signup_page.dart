@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:twitter_clone/DB/database_Helper.dart';
-import 'package:twitter_clone/DB/user.dart';
+import 'package:twitter_clone/DB/User.dart';
 import 'login_page.dart'; // 로그인 페이지를 import
 
 class SignupPage extends StatelessWidget {
