@@ -2,24 +2,28 @@
 
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'package:twitter_clone/DB/post.dart';
-import 'package:twitter_clone/DB/user.dart';
+import 'package:twitter_clone/DB/Post.dart';
+import 'package:twitter_clone/DB/User.dart';
 
-class DatabaseHelper {
+class DatabaseHelper 
+{
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
   static Database? _database;
 
   DatabaseHelper._privateConstructor();
 
-  Future<Database> get database async {
+  Future<Database> get database async 
+  {
     if (_database != null) return _database!;
     _database = await _initDatabase();
     return _database!;
   }
 
-  Future<Database> _initDatabase() async {
+  Future<Database> _initDatabase() async 
+  {
     String path = join(await getDatabasesPath(), 'your_database_name.db'); //로컬 데이터 베이스 파일 이용
-    return await openDatabase(
+    return await openDatabase
+    (
       path,
       version: 1,
       onCreate: _createTable,

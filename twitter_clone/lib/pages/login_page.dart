@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:twitter_clone/DB/database_Helper.dart';
-import 'package:twitter_clone/DB/user.dart';
+import 'package:twitter_clone/DB/User.dart';
 import 'signup_page.dart';
 import 'main_page.dart'; // 메인페이지 import
 

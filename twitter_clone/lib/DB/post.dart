@@ -19,9 +19,7 @@ class Post {
   });
 
   get timestamp => null;
-
   get commentCount => null;
-
   get author => null;
 
   Map<String, dynamic> toMap() {
