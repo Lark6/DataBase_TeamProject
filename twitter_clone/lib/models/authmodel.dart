@@ -20,7 +20,6 @@ class AuthModel extends ChangeNotifier {
       id: 1,
       username: 'example_user',
       password: 'example_password',
-      realName: 'Example User',
       profileMessage: 'Hello, I am example user!',
       gender: 'Male',
       birthday: '1990-01-01',
