@@ -32,61 +32,64 @@ class DatabaseHelper
 
   Future<void> _createTable(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL,
+      CREATE TABLE User (
+        user_id INTEGER PRIMARY KEY AUTOINCREMENT,
         password TEXT NOT NULL,
-        realName TEXT,
-        profileMessage TEXT,
+        user_name TEXT NOT NULL,
+        profile_message TEXT,
         gender TEXT,
         birthday TEXT,
-        followers INTEGER,
-        following INTEGER
+        followers_count INTEGER,
+        following_count INTEGER
       )
     ''');
 
     await db.execute('''
-      CREATE TABLE posts (
+      CREATE TABLE Post (
         post_id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
-        content TEXT,
-        created_at TEXT,
-        like_count INTEGER,
-        FOREIGN KEY (user_id) REFERENCES users(id)
+        post_content TEXT,
+        post_time TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(user_id)
       )
     ''');
 
     await db.execute('''
-      CREATE TABLE comments (
+      CREATE TABLE Comment (
         comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
         post_id INTEGER,
-        content TEXT,
-        created_at TEXT,
-        FOREIGN KEY (post_id) REFERENCES posts(post_id)
+        user_id INTEGER,
+        comment_content TEXT,
+        comment_time TEXT,
+        FOREIGN KEY (post_id) REFERENCES posts(post_id),
+        FOREIGN KEY (user_id) REFERENCES users(user_id)
       );
     ''');
 
     await db.execute('''
-      CREATE TABLE replies (
+      CREATE TABLE Reply (
         reply_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TNTEGER, 
         comment_id INTEGER,
-        content TEXT,
-        FOREIGN KEY (comment_id) REFERENCES comments(comment_id)
+        reply_content TEXT,
+        FOREIGN KEY (comment_id) REFERENCES comments(comment_id),
+        FOREIGN KEY (user_id) REFERENCES users(user_id)
       );
     ''');
 
     await db.execute('''
-      CREATE TABLE follows (
-        follow_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      CREATE TABLE Follow (
         follower_id INTEGER,
         following_id INTEGER,
+        PRIMARY KEY (follower_id, following_id),
         FOREIGN KEY (follower_id) REFERENCES users(id),
         FOREIGN KEY (following_id) REFERENCES users(id)
-      );
+);
+
     ''');
 
     await db.execute('''
-      CREATE TABLE likes (
+      CREATE TABLE Like (
         post_id INTEGER,
         user_id INTEGER,
         like_count INTEGER,
@@ -96,32 +99,6 @@ class DatabaseHelper
       );
     ''');
 
-    await db.execute('''
-      CREATE TABLE profile (
-        user_id INTEGER PRIMARY KEY,
-        FOREIGN KEY (user_id) REFERENCES users(id)
-      );
-    ''');
-
-    await db.execute('''
-      CREATE TABLE following (
-        follow_id INTEGER PRIMARY KEY,
-        user_id INTEGER,
-        following_id INTEGER,
-        FOREIGN KEY (user_id) REFERENCES users(id),
-        FOREIGN KEY (following_id) REFERENCES users(id)
-      );
-    ''');
-
-    await db.execute('''
-      CREATE TABLE followers (
-        follow_id INTEGER PRIMARY KEY,
-        user_id INTEGER,
-        follower_id INTEGER,
-        FOREIGN KEY (user_id) REFERENCES users(id),
-        FOREIGN KEY (follower_id) REFERENCES users(id)
-      );
-    ''');
   }
 
   Future<int> insertUser(User user) async {
