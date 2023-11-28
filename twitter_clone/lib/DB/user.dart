@@ -1,51 +1,47 @@
 // models/user.dart
 
 class User {
-  int? id; // 사용자 식별자
-  String username; // 사용자 아이디
+  int? user_id; // 사용자 식별자
+  String user_name; // 사용자 아이디
   String password; // 사용자 비밀번호
-  String realName; // 사용자 실명
-  String profileMessage; // 사용자 프로필 메시지
+  String profile_message; // 사용자 프로필 메시지
   String gender; // 사용자 성별
   String birthday; // 사용자 생년월일
-  int followers; // 팔로워 수
-  int following; // 팔로잉 수
+  int? followers_count; // 팔로워 수
+  int? following_count; // 팔로잉 수
 
   User({
-    this.id,
-    required this.username,
+    this.user_id,
+    required this.user_name,
     required this.password,
-    required this.realName,
-    required this.profileMessage,
+    required this.profile_message,
     required this.gender,
     required this.birthday,
-    required this.followers,
-    required this.following,
+    required this.followers_count,
+    required this.following_count,
   });
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
-      'username': username,
+      'user_id': user_id,
+      'user_name': user_name,
       'password': password,
-      'realName': realName,
-      'profileMessage': profileMessage,
+      'profile_message': profile_message,
       'gender': gender,
       'birthday': birthday,
-      'followers': followers,
-      'following': following,
+      'followers_count': followers_count,
+      'following_count': following_count,
     };
   }
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
-      id: map['id'],
-      username: map['username'],
+      user_id: map['user_id'],
+      user_name: map['user_name'],
       password: map['password'],
-      realName: map['realName'],
-      profileMessage: map['profileMessage'],
+      profile_message: map['profile_message'],
       gender: map['gender'],
       birthday: map['birthday'],
-      followers: map['followers'],
-      following: map['following'],
+      followers_count: map['followers_count'],
+      following_count: map['following_count'],
     );
   }
 }
