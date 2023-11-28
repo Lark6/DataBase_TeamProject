@@ -21,8 +21,7 @@ class Post {
       'post_id': post_id,
       'user_id': user_id,
       'post_content': post_content,
-      'post_time': post_time.toUtc().millisecondsSinceEpoch,
-      'author': author, // 변경된 부분
+      'post_time': post_time.toIso8601String(),
     };
   }
 
@@ -31,8 +30,7 @@ class Post {
       post_id: map['post_id'],
       user_id: map['user_id'],
       post_content: map['post_content'],
-      post_time: DateTime.fromMillisecondsSinceEpoch(map['timestamp'], isUtc: true),
-      author: map['author'], // 변경된 부분
+      post_time: DateTime.parse(map['post_time']),
     );
   }
 }

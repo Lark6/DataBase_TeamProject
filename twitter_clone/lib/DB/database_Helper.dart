@@ -21,7 +21,7 @@ class DatabaseHelper
 
   Future<Database> _initDatabase() async 
   {
-    String path = join(await getDatabasesPath(), 'your_database_name.db'); //로컬 데이터 베이스 파일 이용
+    String path = join(await getDatabasesPath(), 'test1.db'); //로컬 데이터 베이스 파일 이용
     return await openDatabase
     (
       path,
@@ -52,7 +52,7 @@ class DatabaseHelper
         post_id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
         post_content TEXT,
-        post_time TEXT DEFAULT CURRENT_TIMESTAMP,
+        post_time TEXT,
         FOREIGN KEY (user_id) REFERENCES users(user_id)
       )
     ''');

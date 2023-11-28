@@ -1,5 +1,6 @@
 // main_page.dart
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqlite_api.dart';
 import 'package:twitter_clone/DB/database_Helper.dart';
@@ -100,7 +101,7 @@ class _PostingState extends State<Posting> {
     String tweetContent = _textEditingController.text;
     if (tweetContent.isNotEmpty) {
       if (currentUser != null) {
-        // 현재 로그인한 사용자의 ID와 트윗 내용을 사용하여 트윗을 저장 스낵바로 커런트 유저 전발받았는지
+        // 현재 로그인한 사용자의 ID와 트윗 내용을 사용하여 트윗을 저장
         await DatabaseHelper.instance.insertPost(
           Post(
             user_id: currentUser.user_id,
@@ -133,6 +134,7 @@ class _PostingState extends State<Posting> {
 
 
 //게시글 리스트 출력
+//게시글 리스트 출력
 class TweetList extends StatelessWidget {
   Future<List<Post>> fetchPosts() async {
     DatabaseHelper dbHelper = DatabaseHelper.instance;
@@ -146,7 +148,7 @@ class TweetList extends StatelessWidget {
       return Post(
         post_id: postMap['post_id'],
         post_content: postMap['post_content'],
-        post_time: postMap['post_time'],
+        post_time: DateTime.parse(postMap['post_time']), // 문자열을 DateTime으로 변환
       );
     }).toList();
 
@@ -185,13 +187,15 @@ class TweetItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final DateFormat formatter = DateFormat('yyyy-MM-dd'); // 년월일 포맷
+
     return ListTile(
       title: Text(
         post.post_content,
         style: TextStyle(fontWeight: FontWeight.bold),
       ),
       subtitle: Text(
-        '작성일: ${post.post_time}',
+        '작성일: ${formatter.format(post.post_time)}', // 년월일 형태의 문자열로 표시
         style: TextStyle(color: Colors.grey),
       ),
     );
