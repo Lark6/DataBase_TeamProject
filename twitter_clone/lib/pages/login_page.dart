@@ -60,7 +60,7 @@ class LoginPage extends StatelessWidget {
   if (user != null) {
     // 로그인 성공
     // 여기에서 다음 화면으로 이동하거나 필요한 작업을 수행하세요.
-    print('로그인 성공: ${user.username}');
+    print('로그인 성공: ${user.user_name}');
     WidgetsFlutterBinding.ensureInitialized();
     final directory = await getApplicationDocumentsDirectory();
     print(directory.path);

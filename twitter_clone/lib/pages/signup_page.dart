@@ -74,14 +74,13 @@ class SignupPage extends StatelessWidget {
       }
 
       User newUser = User(
-        username: username,
+        user_name: username,
         password: password,
-        realName: realName,
-        profileMessage: '',
+        profile_message: '',
         gender: gender,
         birthday: '',
-        followers: 0,
-        following: 0,
+        followers_count: 0,
+        following_count: 0,
       );
 
       int userId = await dbHelper.insertUser(newUser);

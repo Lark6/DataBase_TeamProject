@@ -22,7 +22,8 @@ class MainPage extends StatelessWidget
       appBar: AppBar(
         title: Text(
           currentUser != null
-          ? '(${currentUser?.username}) : username(로그인 아이디)': 'CLONE',
+          ? '(${currentUser?.user_name},${currentUser?.user_id})': 'CLONE',
+          style: TextStyle(fontSize: 7.0),
         ),
         actions: [
           IconButton(
@@ -40,7 +41,7 @@ class MainPage extends StatelessWidget
       ),
       body: Column(
         children: [
-          Posting(), //게시글 작성 섹션
+          Posting(currentUser: currentUser), //게시글 작성 섹션
           Divider(),
           Expanded
           (
@@ -53,69 +54,77 @@ class MainPage extends StatelessWidget
 }
 
 //게시글 작성
-class Posting extends StatefulWidget 
-{
+class Posting extends StatefulWidget {
+  final User? currentUser;
+
+  Posting({Key? key, required this.currentUser}) : super(key: key);
+
   @override
   _PostingState createState() => _PostingState();
 }
-
-class _PostingState extends State<Posting> 
-{
+class _PostingState extends State<Posting> {
   final TextEditingController _textEditingController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-  return Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: Row(
-      children: [
-        Expanded(
-          child: TextField(
-            controller: _textEditingController,
-            decoration: InputDecoration(hintText: 'Write everything', border: OutlineInputBorder(),),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              children: [
+                TextField(
+                  controller: _textEditingController,
+                  decoration: InputDecoration(
+                    hintText: 'Write everything',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 8.0),
+                ElevatedButton(
+                  onPressed: () {
+                    _sendPost(context, widget.currentUser); // 포스트 저장
+                  },
+                  child: Text('게시'),
+                ),
+              ],
+            ),
           ),
-          SizedBox(height: 8.0),
-          ElevatedButton
-          (
-            onPressed: () 
-            {
-              _sendPost(context); //포스트 저장
-            },
-            child: Text('게시'),
-          ),
-        ),
         ],
       ),
     );
   }
 
-  void _sendPost(BuildContext context) async //DB에 포스트 저장
-  {
+  void _sendPost(BuildContext context, User? currentUser) async {
     String tweetContent = _textEditingController.text;
-    if (tweetContent.isNotEmpty) 
-    {
-      AuthModel authModel = Provider.of<AuthModel>(context, listen: false);
-      User? currentUser = authModel.currentUser;
-
-      if (currentUser != null) 
-      {
-        // 현재 로그인한 사용자의 ID와 트윗 내용을 사용하여 트윗을 저장
-        await DatabaseHelper.instance.insertPost
-        (
+    if (tweetContent.isNotEmpty) {
+      if (currentUser != null) {
+        // 현재 로그인한 사용자의 ID와 트윗 내용을 사용하여 트윗을 저장 스낵바로 커런트 유저 전발받았는지
+        await DatabaseHelper.instance.insertPost(
           Post(
-            userId: currentUser.id,
+            user_id: currentUser.user_id,
             post_content: tweetContent,
+            author: currentUser.user_name,
+            post_time: DateTime.now(),
           ),
         );
+
         // 트윗을 저장한 후 텍스트 필드를 초기화
         _textEditingController.clear();
+
+        // 저장 후 초기화가 성공적으로 이루어졌음을 사용자에게 알리기 위해 SnackBar를 표시
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('트윗이 성공적으로 저장되었습니다')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('현재 currentuser 없음')),
+        );
       }
-    } 
-    else 
-    {
+    } else {
       // 트윗 내용이 비어 있을 경우 경고 표시 또는 다른 처리를 할 수 있음
-      ScaffoldMessenger.of(context).showSnackBar
-      (
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('트윗 내용을 입력하세요')),
       );
     }
@@ -127,74 +136,52 @@ class _PostingState extends State<Posting>
 class TweetList extends StatelessWidget {
   Future<List<Post>> fetchPosts() async {
     DatabaseHelper dbHelper = DatabaseHelper.instance;
-    List<Post> tweets = [];
 
     // TODO: 실제 데이터베이스에서 데이터 가져오기
     Database db = await dbHelper.database;
-    List<Map<String, dynamic>> postMaps = await db.query('posts', orderBy: 'created_at DESC');
+    List<Map<String, dynamic>> postMaps = await db.query('Post', orderBy: 'post_time DESC');
 
-    for (var postMap in postMaps) {
-      tweets.add(Post(
-        postId: postMap['post_id'],
+    // Post 객체로 변환하여 리스트에 추가
+    List<Post> tweets = postMaps.map((postMap) {
+      return Post(
+        post_id: postMap['post_id'],
         post_content: postMap['post_content'],
         post_time: postMap['post_time'],
-      ));
-    }
+      );
+    }).toList();
 
     return tweets;
   }
-  Future<List<User>> fetchUser(int id) async {
-  DatabaseHelper dbHelper = DatabaseHelper.instance;
-  List<User> users =[];
 
-  // TODO: 실제 데이터베이스에서 데이터 가져오기
-  Database db = await dbHelper.database;
-  List<Map<String, dynamic>> userMaps = await db.query(
-    'User',
-    columns: ['id', 'username'], // 가져올 필드 선택
-    where: 'id = ?',
-    whereArgs: [id],
-  );
-
-  for (var userMap in userMaps) {
-    users.add(User(
-      id: userMap['id'],
-      username: userMap['username'],
-    ));
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Post>>(
+      future: fetchPosts(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('데이터를 불러오는 중 오류가 발생했습니다.');
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Text('포스트가 없습니다.');
+        } else {
+          return ListView.builder(
+            itemCount: snapshot.data!.length,
+            itemBuilder: (context, index) {
+              Post post = snapshot.data![index];
+              return TweetItem(post: post);
+            },
+          );
+        }
+      },
+    );
   }
-  return users;
 }
 
-@override
-Widget build(BuildContext context) {
-  return FutureBuilder<List<Post>>(
-    future: fetchPosts(),
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return CircularProgressIndicator();
-      } else if (snapshot.hasError) {
-        return Text('데이터를 불러오는 중 오류가 발생했습니다.');
-      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-        return Text('포스트가 없습니다.');
-      } else {
-        return ListView.builder(
-          itemCount: snapshot.data!.length,
-          itemBuilder: (context, index) {
-            Post post = snapshot.data![index];
-            return TweetItem(post: post, user: user);
-          },
-        );
-      }
-    },
-  );
-}
-
-}
 class TweetItem extends StatelessWidget {
   final Post post;
-  final User user;
 
-  TweetItem({required this.post, required this.user});
+  TweetItem({required this.post});
 
   @override
   Widget build(BuildContext context) {
@@ -203,43 +190,10 @@ class TweetItem extends StatelessWidget {
         post.post_content,
         style: TextStyle(fontWeight: FontWeight.bold),
       ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          GestureDetector(
-            onTap: () {
-              // TODO: 작성자의 프로필 페이지로 이동하는 코드 작성
-              // Navigator.of(context).push(MaterialPageRoute(
-              //   builder: (context) => ProfilePage(userId: post.author.id),
-              // ));
-            },
-            child: Text(
-              '작성자: ${user.username}', // user.author.realName 대신 user.realName을 사용
-              style: TextStyle(
-                color: Colors.blue,
-                decoration: TextDecoration.underline,
-              ),
-            ),
-          ),
-          Text(
-            '작성일: ${post.post_time}',
-            style: TextStyle(color: Colors.grey),
-          ),
-          // 현재 좋아요 기능 미구현 
-
-          // Text( 
-          //   '좋아요: ${post.like_count}',
-          //   style: TextStyle(color: Colors.green),
-          // ),
-
-          //현재 댓글 기능 미구현
-          // Text(
-          //   '댓글수: ${post.commentCount}',
-          //   style: TextStyle(color: Colors.orange),
-          // ),
-        ],
+      subtitle: Text(
+        '작성일: ${post.post_time}',
+        style: TextStyle(color: Colors.grey),
       ),
-      // 추가적인 트윗 정보 및 기능...
     );
   }
 }

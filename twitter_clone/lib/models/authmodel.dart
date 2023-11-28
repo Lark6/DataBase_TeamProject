@@ -17,15 +17,14 @@ class AuthModel extends ChangeNotifier {
     // 로그인 로직을 여기에 추가
     // 예시로 사용자 정보를 임의로 생성
     _currentUser = User(
-      id: 1,
-      username: 'example_user',
+      user_id: 1,
+      user_name: 'example_user',
       password: 'example_password',
-      realName: 'Example User',
-      profileMessage: 'Hello, I am example user!',
+      profile_message: 'Hello, I am example user!',
       gender: 'Male',
       birthday: '1990-01-01',
-      followers: 100,
-      following: 50,
+      followers_count: 100,
+      following_count: 50,
     );
     _isLoggedIn = true;
 
@@ -40,7 +39,7 @@ class AuthModel extends ChangeNotifier {
   void fetchUserData() async {
     try {
       // DatabaseHelper를 사용하여 사용자 정보를 가져옴
-      User databaseUser = await _databaseHelper.getUserById(_currentUser!.id as int);
+      User databaseUser = await _databaseHelper.getUserById(_currentUser!.user_id as int);
       _currentUser = databaseUser;
       notifyListeners(); // 상태가 변경되었음을 알림
     } catch (e) {
