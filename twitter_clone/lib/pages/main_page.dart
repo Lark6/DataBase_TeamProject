@@ -24,7 +24,7 @@ class MainPage extends StatelessWidget
         title: Text(
           currentUser != null
           ? '(${currentUser?.user_name},${currentUser?.user_id})': 'CLONE',
-          style: TextStyle(fontSize: 7.0),
+          style: TextStyle(fontSize: 20.0),
         ),
         actions: [
           IconButton(
@@ -134,51 +134,58 @@ class _PostingState extends State<Posting> {
 
 
 //게시글 리스트 출력
-//게시글 리스트 출력
-class TweetList extends StatelessWidget {
-  Future<List<Post>> fetchPosts() async {
-    DatabaseHelper dbHelper = DatabaseHelper.instance;
+class TweetList extends StatefulWidget {
+  @override
+  _TweetListState createState() => _TweetListState();
+}
 
-    // TODO: 실제 데이터베이스에서 데이터 가져오기
-    Database db = await dbHelper.database;
-    List<Map<String, dynamic>> postMaps = await db.query('Post', orderBy: 'post_time DESC');
-
-    // Post 객체로 변환하여 리스트에 추가
-    List<Post> tweets = postMaps.map((postMap) {
-      return Post(
-        post_id: postMap['post_id'],
-        post_content: postMap['post_content'],
-        post_time: DateTime.parse(postMap['post_time']), // 문자열을 DateTime으로 변환
-      );
-    }).toList();
-
-    return tweets;
-  }
+class _TweetListState extends State<TweetList> {
+  Future<List<Post>>? _tweets;
 
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<Post>>(
-      future: fetchPosts(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
-        } else if (snapshot.hasError) {
-          return Text('데이터를 불러오는 중 오류가 발생했습니다.');
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Text('포스트가 없습니다.');
-        } else {
-          return ListView.builder(
-            itemCount: snapshot.data!.length,
-            itemBuilder: (context, index) {
-              Post post = snapshot.data![index];
-              return TweetItem(post: post);
-            },
-          );
-        }
-      },
-    );
+  void initState() {
+    super.initState();
+    _tweets = _fetchPosts();
   }
+
+  Future<void> _refresh() async {
+    setState(() {
+      _tweets = _fetchPosts();
+    });
+  }
+
+Future<List<Post>> _fetchPosts() async {
+  List<Post> tweets = await DatabaseHelper.instance.fetchPosts();
+  return tweets;
 }
+
+  @override
+Widget build(BuildContext context) {
+  return FutureBuilder<List<Post>>(
+    future: _fetchPosts(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return CircularProgressIndicator();
+      } else if (snapshot.hasError) {
+        return Text('데이터를 불러오는 중 오류가 발생했습니다.');
+      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+        return Text('포스트가 없습니다.');
+      } else {
+        List<Post> posts = snapshot.data!;
+        return ListView.builder(
+          itemCount: posts.length,
+          itemBuilder: (context, index) {
+            Post post = posts[index];
+            return TweetItem(post: post);
+          },
+        );
+      }
+    },
+  );
+}
+
+}
+
 
 class TweetItem extends StatelessWidget {
   final Post post;
@@ -191,12 +198,21 @@ class TweetItem extends StatelessWidget {
 
     return ListTile(
       title: Text(
-        post.post_content,
-        style: TextStyle(fontWeight: FontWeight.bold),
+        '포스트 내용: ${post.post_content}',
+        style: TextStyle(fontWeight: FontWeight.normal),
       ),
-      subtitle: Text(
-        '작성일: ${formatter.format(post.post_time)}', // 년월일 형태의 문자열로 표시
-        style: TextStyle(color: Colors.grey),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '작성자: ${post.author}', // post.author로 수정
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Text(
+            '작성일: ${formatter.format(post.post_time)}',
+            style: TextStyle(color: Colors.grey),
+          ),
+        ],
       ),
     );
   }

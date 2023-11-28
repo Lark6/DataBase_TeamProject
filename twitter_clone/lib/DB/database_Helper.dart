@@ -170,25 +170,33 @@ class DatabaseHelper
     }
   }
 
-Future<Post> getPostWithUser(int postId) async {
+  Future<List<Map<String, dynamic>>> getPosts() async {
   Database db = await instance.database;
 
-  // Post 테이블과 User 테이블을 조인하여 post_id에 해당하는 데이터 가져오기
-  List<Map<String, dynamic>> result = await db.rawQuery('''
-    SELECT Post.*, User.username as author
+  // Post와 User 테이블을 조인하여 작성자의 유저네임을 함께 가져오기
+  return await db.rawQuery('''
+    SELECT Post.*, User.user_name
     FROM Post
-    INNER JOIN User ON Post.user_id = User.user_id
-    WHERE Post.post_id = ?
-  ''', [postId]);
-
-  if (result.isNotEmpty) {
-    // 결과가 있다면 Post.fromMap을 사용하여 Post 객체 생성
-    return Post.fromMap(result.first);
-  } else {
-    // 결과가 없으면 예외 처리 또는 기본값 반환 등의 로직 수행
-    throw Exception('Post not found');
+    JOIN User ON Post.user_id = User.user_id
+    ORDER BY post_time DESC
+  ''');
   }
+
+Future<List<Post>> fetchPosts() async {
+  List<Map<String, dynamic>> postMaps = await getPosts();
+
+  List<Post> tweets = postMaps.map((postMap) {
+    return Post(
+      post_id: postMap['post_id'],
+      post_content: postMap['post_content'],
+      post_time: DateTime.parse(postMap['post_time']),
+      author: postMap['user_name'] ?? 'Unknown User', // 작성자의 유저네임 추가, null일 경우 'Unknown User'로 설정
+    );
+  }).toList();
+
+  return tweets;
 }
+
 
   
 
