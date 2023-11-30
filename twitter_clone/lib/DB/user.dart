@@ -1,6 +1,7 @@
 // models/user.dart
 
-class User {
+class User 
+{
   int? user_id; // 사용자 식별자
   String user_name; // 사용자 아이디
   String password; // 사용자 비밀번호
@@ -10,7 +11,8 @@ class User {
   int? followers_count; // 팔로워 수
   int? following_count; // 팔로잉 수
 
-  User({
+  User
+  ({
     this.user_id,
     required this.user_name,
     required this.password,
@@ -20,8 +22,10 @@ class User {
     required this.followers_count,
     required this.following_count,
   });
-  Map<String, dynamic> toMap() {
-    return {
+  Map<String, dynamic> toMap() 
+  {
+    return 
+    {
       'user_id': user_id,
       'user_name': user_name,
       'password': password,
@@ -32,8 +36,10 @@ class User {
       'following_count': following_count,
     };
   }
-  factory User.fromMap(Map<String, dynamic> map) {
-    return User(
+  factory User.fromMap(Map<String, dynamic> map) 
+  {
+    return User
+    (
       user_id: map['user_id'],
       user_name: map['user_name'],
       password: map['password'],

@@ -2,12 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:sqflite/sqlite_api.dart';
 import 'package:twitter_clone/DB/database_Helper.dart';
 import 'package:twitter_clone/DB/Post.dart';
 import 'package:twitter_clone/DB/User.dart';
 import 'package:twitter_clone/models/authmodel.dart';
 import 'package:twitter_clone/pages/login_page.dart';
+import 'package:twitter_clone/pages/profile_page.dart';
 
 //Mainpage
 class MainPage extends StatelessWidget 
@@ -140,23 +140,23 @@ class TweetList extends StatefulWidget {
 }
 
 class _TweetListState extends State<TweetList> {
-  Future<List<Post>>? _tweets;
+  Future<List<Post>>? _posts;
 
   @override
   void initState() {
     super.initState();
-    _tweets = _fetchPosts();
+    _posts = _fetchPosts();
   }
 
   Future<void> _refresh() async {
     setState(() {
-      _tweets = _fetchPosts();
+      _posts = _fetchPosts();
     });
   }
 
 Future<List<Post>> _fetchPosts() async {
-  List<Post> tweets = await DatabaseHelper.instance.fetchPosts();
-  return tweets;
+  List<Post> posts = await DatabaseHelper.instance.fetchPosts();
+  return posts;
 }
 
   @override
@@ -204,15 +204,31 @@ class TweetItem extends StatelessWidget {
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '작성자: ${post.author}', // post.author로 수정
-            style: TextStyle(fontWeight: FontWeight.bold),
+          GestureDetector(
+            onTap: () {
+              _ProfilePage(context,post.author ??''); // 프로필 페이지로 이동
+            },
+            child: Text(
+              '작성자: ${post.author?? ''}', // post.author로 수정
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                decoration: TextDecoration.underline,
+              ),
+            ),
           ),
           Text(
             '작성일: ${formatter.format(post.post_time)}',
             style: TextStyle(color: Colors.grey),
           ),
         ],
+      ),
+    );
+  }
+  void _ProfilePage(BuildContext context, String author) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProfilePage(user_name: author),
       ),
     );
   }

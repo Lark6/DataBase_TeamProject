@@ -20,20 +20,20 @@ Future<String> getDatabasePath() async {
   return join(appDirectory.path, 'your_database.db');
 }
 void main() {
-  // Initialize sqflite FFI before using it
-  sqfliteFfiInit();
+  // // Initialize sqflite FFI before using it
+  // sqfliteFfiInit();
 
-  // If using sqflite_common_ffi, set the databaseFactory to databaseFactoryFfi
-  databaseFactory = databaseFactoryFfi;
+  // // If using sqflite_common_ffi, set the databaseFactory to databaseFactoryFfi
+  // databaseFactory = databaseFactoryFfi;
 
 void main() async {
-  // Get the application documents directory.
-  String path = await getDatabasePath();
+  // // Get the application documents directory.
+  // String path = await getDatabasePath();
 
-  print('SQLite Database Path: $path');
-  print(path);
-  // Use the 'path' variable when opening the database.
-  // ...
+  // print('SQLite Database Path: $path');
+  // print(path);
+  // // Use the 'path' variable when opening the database.
+  // // ...
 }
 
 

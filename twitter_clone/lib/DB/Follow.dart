@@ -1,16 +1,20 @@
-class Follow {
+class Follow 
+{
   final int followId;
   final int followerId;
   final int followingId;
 
-  Follow({
+  Follow
+  ({
     required this.followId,
     required this.followerId,
     required this.followingId,
   });
 
-  Map<String, dynamic> toMap() {
-    return {
+  Map<String, dynamic> toMap() 
+  {
+    return 
+    {
       'followId': followId,
       'followerId': followerId,
       'followingId': followingId,

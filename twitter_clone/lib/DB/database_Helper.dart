@@ -131,7 +131,8 @@ class DatabaseHelper
     }
   }
 
-  Future<bool> isUserExists(String username) async {
+  Future<bool> isUserExists(String username) async 
+  {
     final Database db = await database;
     final List<Map<String, dynamic>> result = await db.query
     (
@@ -154,27 +155,34 @@ class DatabaseHelper
 
 
   // getUserById 메소드 추가
-  Future<User> getUserById(int userId) async {
+  Future<User> getUserById(int userId) async 
+  {
     final Database db = await database;
-    List<Map<String, dynamic>> maps = await db.query(
+    List<Map<String, dynamic>> maps = await db.query
+    (
       'User',
       where: 'user_id = ?',
       whereArgs: [userId],
     );
 
-    if (maps.isNotEmpty) {
+    if (maps.isNotEmpty) 
+    {
       return User.fromMap(maps.first);
-    } else {
+    } 
+    else 
+    {
       // 사용자를 찾지 못한 경우에 대한 처리
       throw Exception('해당 ID의 사용자를 찾을 수 없습니다.');
     }
   }
 
-  Future<List<Map<String, dynamic>>> getPosts() async {
+  Future<List<Map<String, dynamic>>> getPosts() async 
+  {
   Database db = await instance.database;
 
   // Post와 User 테이블을 조인하여 작성자의 유저네임을 함께 가져오기
-  return await db.rawQuery('''
+  return await db.rawQuery
+  ('''
     SELECT Post.*, User.user_name
     FROM Post
     JOIN User ON Post.user_id = User.user_id
@@ -182,11 +190,14 @@ class DatabaseHelper
   ''');
   }
 
-Future<List<Post>> fetchPosts() async {
+Future<List<Post>> fetchPosts() async 
+{
   List<Map<String, dynamic>> postMaps = await getPosts();
 
-  List<Post> tweets = postMaps.map((postMap) {
-    return Post(
+  List<Post> tweets = postMaps.map((postMap) 
+  {
+    return Post
+    (
       post_id: postMap['post_id'],
       post_content: postMap['post_content'],
       post_time: DateTime.parse(postMap['post_time']),
@@ -197,8 +208,6 @@ Future<List<Post>> fetchPosts() async {
   return tweets;
 }
 
-
-  
 
   // ... (다른 메소드들)
 }

@@ -1,9 +1,8 @@
 // models/post.dart
-import 'package:twitter_clone/DB/User.dart';
 
 class Post {
   int? post_id;
-  int? user_id;
+  final int? user_id;
   String post_content;
   DateTime post_time;
   String? author; // 변경된 부분
