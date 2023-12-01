@@ -46,7 +46,7 @@ class MainPage extends StatelessWidget
           Divider(),
           Expanded
           (
-            child: TweetList(), //현재까지 작성된 게시글들
+            child: TweetList(currentUser: currentUser,), //현재까지 작성된 게시글들
           ),
         ],
       ),
@@ -99,6 +99,7 @@ class _PostingState extends State<Posting> {
 
   void _sendPost(BuildContext context, User? currentUser) async {
     String tweetContent = _textEditingController.text;
+    
     if (tweetContent.isNotEmpty) {
       if (currentUser != null) {
         // 현재 로그인한 사용자의 ID와 트윗 내용을 사용하여 트윗을 저장
@@ -135,12 +136,17 @@ class _PostingState extends State<Posting> {
 
 //게시글 리스트 출력
 class TweetList extends StatefulWidget {
+  final User? currentUser; // 추가된 부분
+
+  TweetList({Key? key, required this.currentUser}) : super(key: key);
+
   @override
   _TweetListState createState() => _TweetListState();
 }
 
 class _TweetListState extends State<TweetList> {
   Future<List<Post>>? _posts;
+  
 
   @override
   void initState() {
@@ -154,47 +160,47 @@ class _TweetListState extends State<TweetList> {
     });
   }
 
-Future<List<Post>> _fetchPosts() async {
-  List<Post> posts = await DatabaseHelper.instance.fetchPosts();
-  return posts;
-}
+  Future<List<Post>> _fetchPosts() async {
+    List<Post> posts = await DatabaseHelper.instance.fetchPosts();
+    return posts;
+  }
 
   @override
-Widget build(BuildContext context) {
-  return FutureBuilder<List<Post>>(
-    future: _fetchPosts(),
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return CircularProgressIndicator();
-      } else if (snapshot.hasError) {
-        return Text('데이터를 불러오는 중 오류가 발생했습니다.');
-      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-        return Text('포스트가 없습니다.');
-      } else {
-        List<Post> posts = snapshot.data!;
-        return ListView.builder(
-          itemCount: posts.length,
-          itemBuilder: (context, index) {
-            Post post = posts[index];
-            return TweetItem(post: post);
-          },
-        );
-      }
-    },
-  );
-}
-
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Post>>(
+      future: _fetchPosts(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('데이터를 불러오는 중 오류가 발생했습니다.');
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Text('포스트가 없습니다.');
+        } else {
+          List<Post> posts = snapshot.data!;
+          return ListView.builder(
+            itemCount: posts.length,
+            itemBuilder: (context, index) {
+              Post post = posts[index];
+              return TweetItem(post: post, currentUser: widget.currentUser); // 변경된 부분
+            },
+          );
+        }
+      },
+    );
+  }
 }
 
 
 class TweetItem extends StatelessWidget {
   final Post post;
+  final User? currentUser; // 새로 추가된 부분
 
-  TweetItem({required this.post});
+  TweetItem({required this.post, required this.currentUser});
 
   @override
   Widget build(BuildContext context) {
-    final DateFormat formatter = DateFormat('yyyy-MM-dd'); // 년월일 포맷
+    final DateFormat formatter = DateFormat('yyyy-MM-dd');
 
     return ListTile(
       title: Text(
@@ -206,10 +212,10 @@ class TweetItem extends StatelessWidget {
         children: [
           GestureDetector(
             onTap: () {
-              _ProfilePage(context,post.author ??''); // 프로필 페이지로 이동
+              _ProfilePage(context, post.author ?? '', currentUser, post.user_id);
             },
             child: Text(
-              '작성자: ${post.author?? ''}', // post.author로 수정
+              '작성자: ${post.author ?? ''}',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 decoration: TextDecoration.underline,
@@ -224,11 +230,12 @@ class TweetItem extends StatelessWidget {
       ),
     );
   }
-  void _ProfilePage(BuildContext context, String author) {
+
+  void _ProfilePage(BuildContext context, String author, User? currentUser, int? user_id) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ProfilePage(user_name: author),
+        builder: (context) => ProfilePage(currentUser: currentUser, user_name: author, userId: user_id ?? 0),
       ),
     );
   }

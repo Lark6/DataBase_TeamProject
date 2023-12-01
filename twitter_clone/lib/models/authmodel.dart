@@ -3,7 +3,7 @@ import 'package:twitter_clone/DB/User.dart';
 import 'package:twitter_clone/DB/database_Helper.dart';
 
 
-class AuthModel extends ChangeNotifier 
+class AuthModel extends ChangeNotifier
 {
   User? _currentUser;
   bool _isLoggedIn = false;

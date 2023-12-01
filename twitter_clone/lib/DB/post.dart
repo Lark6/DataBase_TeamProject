@@ -13,6 +13,7 @@ class Post {
     required this.post_content,
     required this.post_time,
     this.author,
+    
   });
 
   Map<String, dynamic> toMap() {

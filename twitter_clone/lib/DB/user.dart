@@ -10,6 +10,17 @@ class User
   String birthday; // 사용자 생년월일
   int? followers_count; // 팔로워 수
   int? following_count; // 팔로잉 수
+  List<int> followingList = [];
+
+  // 팔로우 목록에 사용자 추가
+  void addFollowing(int userId) {
+    followingList.add(userId);
+  }
+
+  // 팔로우 목록에서 사용자 제거
+  void removeFollowing(int userId) {
+    followingList.remove(userId);
+  }
 
   User
   ({

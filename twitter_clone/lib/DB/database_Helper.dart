@@ -2,6 +2,7 @@
 
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:twitter_clone/DB/Follow.dart';
 import 'package:twitter_clone/DB/Post.dart';
 import 'package:twitter_clone/DB/User.dart';
 
@@ -10,7 +11,7 @@ class DatabaseHelper
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
   static Database? _database;
 
-  DatabaseHelper._privateConstructor();
+  DatabaseHelper._privateConstructor(); 
 
   Future<Database> get database async 
   {
@@ -21,7 +22,7 @@ class DatabaseHelper
 
   Future<Database> _initDatabase() async 
   {
-    String path = join(await getDatabasesPath(), 'test1.db'); //로컬 데이터 베이스 파일 이용
+    String path = join(await getDatabasesPath(), 'test12.db'); //Use local DB file
     return await openDatabase
     (
       path,
@@ -30,7 +31,7 @@ class DatabaseHelper
     );
   }
 
-  Future<void> _createTable(Database db, int version) async 
+  Future<void> _createTable(Database db, int version) async //create table
   {
     await db.execute
     ('''
@@ -106,13 +107,13 @@ class DatabaseHelper
     ''');
   }
 
-  Future<int> insertUser(User user) async 
+  Future<int> insertUser(User user) async //Sign in User
   {
     Database db = await instance.database;
     return await db.insert('User', user.toMap());
   }
 
-  Future<User?> getUser(String user_name, String password) async 
+  Future<User?> getLoginFactor(String user_name, String password) async //Get password, Id
   {
     Database db = await instance.database;
     List<Map<String, dynamic>> maps = await db.query
@@ -122,16 +123,17 @@ class DatabaseHelper
       whereArgs: [user_name, password],
     );
 
-    if (maps.isNotEmpty) {
-      // 데이터베이스에서 사용자를 찾은 경우
+    if (maps.isNotEmpty) //find user at DB
+    {
       return User.fromMap(maps.first);
-    } else {
-      // 사용자를 찾지 못한 경우
+    } 
+    else //fail to find
+    {
       return null;
     }
   }
 
-  Future<bool> isUserExists(String username) async 
+  Future<bool> isUserExists(String username) async //find who are existed
   {
     final Database db = await database;
     final List<Map<String, dynamic>> result = await db.query
@@ -144,18 +146,13 @@ class DatabaseHelper
     return result.isNotEmpty;
   }
 
-
-  Future<int> insertPost(Post post) async 
+  Future<int> insertPost(Post post) async //insert post
   {
-  // 데이터베이스 인스턴스 획득
   Database db = await instance.database;
-  // 데이터베이스에 데이터 삽입
   return await db.insert('Post', post.toMap());
   }
 
-
-  // getUserById 메소드 추가
-  Future<User> getUserById(int userId) async 
+  Future<User> getUserById(int userId) async //get User Id
   {
     final Database db = await database;
     List<Map<String, dynamic>> maps = await db.query
@@ -171,16 +168,15 @@ class DatabaseHelper
     } 
     else 
     {
-      // 사용자를 찾지 못한 경우에 대한 처리
-      throw Exception('해당 ID의 사용자를 찾을 수 없습니다.');
+      throw Exception('Can not find user who use this Id');
     }
   }
 
-  Future<List<Map<String, dynamic>>> getPosts() async 
+  Future<List<Map<String, dynamic>>> getPosts() async //get post with author using Join
   {
   Database db = await instance.database;
 
-  // Post와 User 테이블을 조인하여 작성자의 유저네임을 함께 가져오기
+  // Join the Post and User tables to get the author's username together
   return await db.rawQuery
   ('''
     SELECT Post.*, User.user_name
@@ -190,8 +186,8 @@ class DatabaseHelper
   ''');
   }
 
-Future<List<Post>> fetchPosts() async 
-{
+  Future<List<Post>> fetchPosts() async 
+  {
   List<Map<String, dynamic>> postMaps = await getPosts();
 
   List<Post> tweets = postMaps.map((postMap) 
@@ -206,8 +202,120 @@ Future<List<Post>> fetchPosts() async
   }).toList();
 
   return tweets;
+  }
+
+  Future<List<User>> getFollowerList(int userId) async 
+  {
+  final Database db = await database;
+  List<Map<String, dynamic>> maps = await db.rawQuery
+  (
+    '''
+    SELECT User.*
+    FROM User
+    JOIN Follow ON Follow.follower_id = User.user_id
+    WHERE Follow.following_id = ?
+    ''',
+    [userId],
+  );
+
+  return maps.map((map) => User.fromMap(map)).toList();
 }
 
+  Future<List<User>> getFollowingList(int userId) async 
+  {
+  final Database db = await database;
+  List<Map<String, dynamic>> maps = await db.rawQuery
+  (
+    '''
+    SELECT User.*
+    FROM User
+    JOIN Follow ON Follow.following_id = User.user_id
+    WHERE Follow.follower_id = ?
+    ''',
+    [userId],
+  );
 
-  // ... (다른 메소드들)
+  return maps.map((map) => User.fromMap(map)).toList();
+}
+
+  Future<User?> getAllUser(String user_name) async //get user all info data
+  {
+    Database db = await instance.database;
+    List<Map<String, dynamic>> maps = await db.query
+    (
+      'User',
+      where: 'user_name = ?',
+      whereArgs: [user_name],
+    );
+
+    if (maps.isNotEmpty) 
+    {
+      return User.fromMap(maps.first);
+    }
+    else 
+    {
+      return null;
+    }
+  }
+
+  // method for follow
+
+  // Follow 추가
+  Future<void> insertFollow(Follow follow) async {
+    Database db = await instance.database;
+    await db.insert('Follow', follow.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  // Follow 삭제
+  Future<void> deleteFollow(int followerId, int followingId) async {
+    Database db = await instance.database;
+    await db.delete('Follow',
+        where: 'follower_id = ? AND following_id = ?',
+        whereArgs: [followerId, followingId]);
+  }
+
+  // 팔로우 여부 확인
+  Future<bool> isFollowing(int followerId, int followingId) async {
+    Database db = await instance.database;
+    List<Map<String, dynamic>> result = await db.query('Follow',
+        where: 'follower_id = ? AND following_id = ?',
+        whereArgs: [followerId, followingId]);
+
+    return result.isNotEmpty;
+  }
+
+  // 팔로워 수 가져오기
+  Future<int> getFollowerCount(int userId) async {
+    Database db = await instance.database;
+    List<Map<String, dynamic>> result = await db.query('Follow',
+        where: 'following_id = ?', whereArgs: [userId]);
+
+    return result.length;
+  }
+
+  // 팔로잉 수 가져오기
+  Future<int> getFollowingCount(int userId) async {
+    Database db = await instance.database;
+    List<Map<String, dynamic>> result = await db.query('Follow',
+        where: 'follower_id = ?', whereArgs: [userId]);
+
+    return result.length;
+  }
+
+  Future<void> updateUser(User user) async {
+    Database db = await instance.database;
+
+    await db.update(
+      'User',
+      user.toMap(),
+      where: 'user_id = ?',
+      whereArgs: [user.user_id],
+    );
+  }
+
+
+
+
+  // add other methods
 }
