@@ -55,7 +55,7 @@ class LoginPage extends StatelessWidget {
   String password = _passwordController.text.trim();
 
   DatabaseHelper dbHelper = DatabaseHelper.instance;
-  User? user = await dbHelper.getUser(username, password);
+  User? user = await dbHelper.getLoginFactor(username, password);
 
   if (user != null) {
     // 로그인 성공
