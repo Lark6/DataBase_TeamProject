@@ -108,7 +108,7 @@ class _PostingState extends State<Posting> {
             user_id: currentUser.user_id,
             post_content: tweetContent,
             author: currentUser.user_name,
-            post_time: DateTime.now(),
+            post_time: DateTime.now(), post_id: null, 
           ),
         );
 
@@ -223,7 +223,7 @@ class TweetItem extends StatelessWidget {
             ),
           ),
           Text(
-            '작성일: ${formatter.format(post.post_time)}',
+            '작성일: ${formatter.format(post.post_time as DateTime)}',
             style: TextStyle(color: Colors.grey),
           ),
         ],
