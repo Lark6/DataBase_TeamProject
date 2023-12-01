@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:twitter_clone/DB/Follow.dart';
 import 'package:twitter_clone/DB/User.dart';
 import 'package:twitter_clone/DB/database_Helper.dart';
-import 'package:twitter_clone/models/authmodel.dart';
 import 'package:twitter_clone/pages/EditProflle_page.dart';
 import 'package:twitter_clone/pages/FollowerList_page.dart';
 
@@ -15,7 +14,9 @@ class ProfilePage extends StatelessWidget with ChangeNotifier {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<User?>(
+    return 
+    
+    FutureBuilder<User?>(
       future: getUserData(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -42,15 +43,41 @@ class ProfilePage extends StatelessWidget with ChangeNotifier {
                   title: Text('프로필 메시지: ${user.profile_message ?? '없음'}'),
                 ),
                 ListTile(
-                  title: Text('팔로워 수: ${user.followers_count ?? 0}'),
+                  title: FutureBuilder<int>(
+                    // 팔로워 수 가져오기
+                    future: getFollowerCount(user.user_id ?? 0),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (snapshot.hasError) {
+                        return Text('에러 발생: ${snapshot.error}');
+                      } else {
+                        int followerCount = snapshot.data ?? 0;
+                        return Text('팔로워 수: $followerCount');
+                      }
+                    },
+                  ),
                   onTap: () {
-                    //navigateToFollowerList(context, user.user_id);
+                    navigateToFollowerList(context, user.user_id ?? 0);
                   },
                 ),
                 ListTile(
-                  title: Text('팔로잉 수: ${user.following_count ?? 0}'),
+                  title: FutureBuilder<int>(
+                    // 팔로잉 수 가져오기
+                    future: getFollowingCount(user.user_id ?? 0),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (snapshot.hasError) {
+                        return Text('에러 발생: ${snapshot.error}');
+                      } else {
+                        int followingCount = snapshot.data ?? 0;
+                        return Text('팔로잉 수: $followingCount');
+                      }
+                    },
+                  ),
                   onTap: () {
-                    //navigateToFollowingList(context, user.user_id);
+                    navigateToFollowingList(context, user.user_id ?? 0);
                   },
                 ),
                 ListTile(
@@ -59,6 +86,35 @@ class ProfilePage extends StatelessWidget with ChangeNotifier {
                 ListTile(
                   title: Text('생년월일: ${user.birthday}'),
                 ),
+                if (!isCurrentUserProfile) // 현재 사용자와 프로필 사용자가 다를 때만 버튼 표시
+                  FutureBuilder<bool>(
+                    // 팔로우 여부 확인
+                    future: checkFollowingStatus(currentUser?.user_id ?? 0, user.user_id ?? 0),
+
+                    builder: (context, followingSnapshot) {
+                      if (followingSnapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (followingSnapshot.hasError) {
+                        return Text('팔로우 정보를 확인하는 중 오류가 발생했습니다.');
+                      } else {
+                        bool isFollowing = followingSnapshot.data ?? false;
+                        return ElevatedButton(
+                          onPressed: () async {
+                            if (isFollowing) {
+                              // 언팔로우
+                              await unfollow(currentUser!.user_id ?? 0, user.user_id ?? 0);
+                            } else {
+                              // 팔로우
+                              await follow(currentUser!.user_id ?? 0, user.user_id ?? 0);
+                            }
+                            // 팔로우 여부 갱신
+                            refreshProfile();
+                          },
+                          child: Text(isFollowing ? '언팔로우' : '팔로우'),
+                        );
+                      }
+                    },
+                  ),
                 if (isCurrentUserProfile)
                   ElevatedButton(
                     onPressed: () {
@@ -66,12 +122,9 @@ class ProfilePage extends StatelessWidget with ChangeNotifier {
                         // 현재 사용자와 프로필의 사용자가 동일한 경우 회원 정보 수정 창으로 이동
                         _navigateToEditProfile(context);
                         refreshProfile();
-                      } else {
-                        // 다른 사용자의 프로필인 경우 팔로우 또는 언팔로우 로직 수행
-                        followUnfollowLogic(currentUser, user);
                       }
                     },
-                    child: Text(isCurrentUserProfile ? '회원 정보 수정' : (isFollowing ? '언팔로우' : '팔로우')),
+                    child: Text('회원 정보 수정'),
                   ),
               ],
             ),
@@ -81,52 +134,14 @@ class ProfilePage extends StatelessWidget with ChangeNotifier {
     );
   }
 
+// 프로필 정보를 불러오거나 수정하는데 필요한 메소드들 
   void refreshProfile() {
     notifyListeners();
-  }
-
-  bool get isFollowing {
-    return currentUser?.followingList.contains(currentUser?.user_id) ?? false;
   }
 
   bool isCurrentUserLogic(User? currentUser, User profileUser) {
     print(currentUser?.user_id);
     return currentUser != null && currentUser.user_id == profileUser.user_id;
-  }
-
-  void followUnfollowLogic(User? currentUser, User profileUser) {
-    if (isFollowing) {
-      unfollowUser(currentUser!, profileUser);
-    } else {
-      followUser(currentUser!, profileUser);
-    }
-  }
-
-  Future<void> followUser(User currentUser, User profileUser) async {
-    Follow follow = Follow(
-      followId: 0,
-      followerId: currentUser.user_id!,
-      followingId: profileUser.user_id!,
-    );
-
-    await DatabaseHelper.instance.insertFollow(follow);
-
-    currentUser.following_count = (currentUser.following_count ?? 0) + 1;
-    DatabaseHelper.instance.updateUser(currentUser);
-
-    notifyListeners();
-  }
-
-  Future<void> unfollowUser(User currentUser, User profileUser) async {
-    await DatabaseHelper.instance.deleteFollow(
-      currentUser.user_id!,
-      profileUser.user_id!,
-    );
-
-    currentUser.following_count = (currentUser.following_count ?? 0) - 1;
-    DatabaseHelper.instance.updateUser(currentUser);
-
-    notifyListeners();
   }
 
   Future<User?> getUserData() async {
@@ -152,16 +167,72 @@ class ProfilePage extends StatelessWidget with ChangeNotifier {
     );
   }
 
-  void _navigateToEditProfile(BuildContext context) {
-    Navigator.push(
+  void _navigateToEditProfile(BuildContext context) async {
+    // 업데이트된 사용자 정보를 받아오기
+    User? updatedUser = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => EditProfilePage(currentUser: currentUser),
       ),
     );
+
+    // 사용자 정보가 업데이트되었으면 최신화된 프로필 페이지 열기
+    if (updatedUser != null) {
+      // ignore: use_build_context_synchronously
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProfilePage(
+            currentUser: updatedUser,
+            user_name: updatedUser.user_name,
+            userId: updatedUser.user_id ?? 0,
+          ),
+        ),
+      );
+    }
+  }
+
+  // ProfilePage 클래스에 팔로잉 및 팔로워 수를 가져오는 메서드 추가
+  Future<int> getFollowerCount(int userId) async {
+    return await DatabaseHelper.instance.getFollowerCount(userId);
+  }
+
+  Future<int> getFollowingCount(int userId) async {
+    return await DatabaseHelper.instance.getFollowingCount(userId);
   }
 
 
-}
 
+
+
+
+
+
+// 팔로우 기능 구현을 위한 메소드들 
+  // 팔로우 여부 확인
+  Future<bool> checkFollowingStatus(int followerId, int followingId) async {
+    return await DatabaseHelper.instance.isFollowing(followerId, followingId);
+  }
+
+  // 팔로우
+  Future<void> follow(int followerId, int followingId) async {
+    Follow follow = Follow(followId: 0, follower_id: followerId, following_id: followingId);
+    await DatabaseHelper.instance.insertFollow(follow);
+  }
+
+  // 언팔로우
+  Future<void> unfollow(int followerId, int followingId) async {
+    await DatabaseHelper.instance.deleteFollow(followerId, followingId);
+  }
+
+
+
+
+
+
+
+
+
+
+}
 

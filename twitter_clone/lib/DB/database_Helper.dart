@@ -86,11 +86,11 @@ class DatabaseHelper
     await db.execute
     ('''
       CREATE TABLE Follow (
+        followId INTEGER PRIMARY KEY AUTOINCREMENT,
         follower_id INTEGER,
         following_id INTEGER,
-        PRIMARY KEY (follower_id, following_id),
-        FOREIGN KEY (follower_id) REFERENCES users(id),
-        FOREIGN KEY (following_id) REFERENCES users(id)
+        FOREIGN KEY (follower_id) REFERENCES users(user_id),
+        FOREIGN KEY (following_id) REFERENCES users(user_id)
       );
     ''');
 
@@ -263,8 +263,7 @@ class DatabaseHelper
   // Follow 추가
   Future<void> insertFollow(Follow follow) async {
     Database db = await instance.database;
-    await db.insert('Follow', follow.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert('Follow', follow.toMap());
   }
 
   // Follow 삭제
@@ -282,10 +281,10 @@ class DatabaseHelper
         where: 'follower_id = ? AND following_id = ?',
         whereArgs: [followerId, followingId]);
 
-    return result.isNotEmpty;
+    return result.length > 0;
   }
 
-  // 팔로워 수 가져오기
+  // 팔로워,팔로잉 수 가져오기
   Future<int> getFollowerCount(int userId) async {
     Database db = await instance.database;
     List<Map<String, dynamic>> result = await db.query('Follow',
@@ -294,7 +293,6 @@ class DatabaseHelper
     return result.length;
   }
 
-  // 팔로잉 수 가져오기
   Future<int> getFollowingCount(int userId) async {
     Database db = await instance.database;
     List<Map<String, dynamic>> result = await db.query('Follow',
@@ -314,7 +312,7 @@ class DatabaseHelper
     );
   }
 
-
+  
 
 
   // add other methods
