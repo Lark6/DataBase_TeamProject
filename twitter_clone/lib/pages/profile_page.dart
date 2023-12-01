@@ -3,7 +3,10 @@ import 'package:twitter_clone/DB/Follow.dart';
 import 'package:twitter_clone/DB/User.dart';
 import 'package:twitter_clone/DB/database_Helper.dart';
 import 'package:twitter_clone/pages/EditProflle_page.dart';
-import 'package:twitter_clone/pages/FollowerList_page.dart';
+import 'package:twitter_clone/pages/follower_page.dart';
+import 'package:twitter_clone/pages/following_page.dart';
+
+
 
 class ProfilePage extends StatelessWidget with ChangeNotifier {
   final String user_name;
@@ -13,10 +16,9 @@ class ProfilePage extends StatelessWidget with ChangeNotifier {
   ProfilePage({required this.currentUser, required this.user_name, required this.userId});
 
   @override
+
   Widget build(BuildContext context) {
-    return 
-    
-    FutureBuilder<User?>(
+    return FutureBuilder<User?>(
       future: getUserData(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -90,7 +92,6 @@ class ProfilePage extends StatelessWidget with ChangeNotifier {
                   FutureBuilder<bool>(
                     // 팔로우 여부 확인
                     future: checkFollowingStatus(currentUser?.user_id ?? 0, user.user_id ?? 0),
-
                     builder: (context, followingSnapshot) {
                       if (followingSnapshot.connectionState == ConnectionState.waiting) {
                         return CircularProgressIndicator();
@@ -108,7 +109,9 @@ class ProfilePage extends StatelessWidget with ChangeNotifier {
                               await follow(currentUser!.user_id ?? 0, user.user_id ?? 0);
                             }
                             // 팔로우 여부 갱신
-                            refreshProfile();
+                            await refreshProfile();
+                            // 업데이트된 프로필 페이지 열기
+                            _navigateToProfile(context, user.user_name);
                           },
                           child: Text(isFollowing ? '언팔로우' : '팔로우'),
                         );
@@ -121,7 +124,6 @@ class ProfilePage extends StatelessWidget with ChangeNotifier {
                       if (isCurrentUserProfile) {
                         // 현재 사용자와 프로필의 사용자가 동일한 경우 회원 정보 수정 창으로 이동
                         _navigateToEditProfile(context);
-                        refreshProfile();
                       }
                     },
                     child: Text('회원 정보 수정'),
@@ -133,9 +135,10 @@ class ProfilePage extends StatelessWidget with ChangeNotifier {
       },
     );
   }
-
 // 프로필 정보를 불러오거나 수정하는데 필요한 메소드들 
-  void refreshProfile() {
+
+
+  Future<void> refreshProfile() async {
     notifyListeners();
   }
 
@@ -146,7 +149,8 @@ class ProfilePage extends StatelessWidget with ChangeNotifier {
 
   Future<User?> getUserData() async {
     DatabaseHelper dbHelper = DatabaseHelper.instance;
-    return dbHelper.getAllUser(user_name);
+    User? updatedUser = await dbHelper.getAllUser(user_name);
+    return updatedUser;
   }
 
   void navigateToFollowerList(BuildContext context, int userId) {
@@ -201,7 +205,21 @@ class ProfilePage extends StatelessWidget with ChangeNotifier {
     return await DatabaseHelper.instance.getFollowingCount(userId);
   }
 
-
+  void _navigateToProfile(BuildContext context, String userName) async {
+    User? updatedUser = await getUserData();
+    if (updatedUser != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProfilePage(
+            currentUser: currentUser,
+            user_name: userName,
+            userId: updatedUser.user_id ?? 0,
+          ),
+        ),
+      );
+    }
+  }
 
 
 
