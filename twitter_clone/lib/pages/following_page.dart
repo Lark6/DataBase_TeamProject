@@ -1,13 +1,16 @@
 // 파일: following_list_page.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:twitter_clone/DB/User.dart';
 import 'package:twitter_clone/DB/database_Helper.dart';
-import 'package:twitter_clone/pages/Profile_page.dart'; // 해당 파일의 경로에 맞게 수정
+import 'package:twitter_clone/models/authmodel.dart';
+import 'package:twitter_clone/pages/profile_page.dart'; // 해당 파일의 경로에 맞게 수정
 
 class FollowingListPage extends StatelessWidget {
   final int? userId;
+  final User? currentUser; // currentUser 파라미터 추가
 
-  FollowingListPage({required this.userId});
+  FollowingListPage({required this.userId, this.currentUser});
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +43,12 @@ class FollowingListPage extends StatelessWidget {
                 return ListTile(
                   title: Text(followingUser.user_name),
                   onTap: () {
-                    navigateToProfile(context, followingUser.user_name, followingUser.user_id);
+                    navigateToProfile(
+                      context,
+                      followingUser.user_name,
+                      followingUser.user_id,
+                      currentUser: currentUser, // currentUser를 navigateToProfile에 전달
+                    );
                   },
                 );
               },
@@ -61,16 +69,17 @@ class FollowingListPage extends StatelessWidget {
     }
   }
 
-  void navigateToProfile(BuildContext context, String userName, int? userId) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ProfilePage(
-          currentUser: null, // 여기에 현재 사용자 정보를 전달하도록 수정
-          user_name: userName,
-          userId: userId ?? 0,
-        ),
+  void navigateToProfile(BuildContext context, String userName, int? userId, {User? currentUser}) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ProfilePage(
+        currentUser: currentUser,
+        user_name: userName,
+        userId: userId ?? 0,
       ),
-    );
-  }
+    ),
+  );
+}
+
 }

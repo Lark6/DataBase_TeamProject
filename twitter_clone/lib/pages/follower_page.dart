@@ -1,13 +1,13 @@
-// 파일: follower_list_page.dart
 import 'package:flutter/material.dart';
 import 'package:twitter_clone/DB/User.dart';
 import 'package:twitter_clone/DB/database_Helper.dart';
-import 'package:twitter_clone/pages/Profile_page.dart'; // 해당 파일의 경로에 맞게 수정
+import 'package:twitter_clone/pages/profile_page.dart'; // 해당 파일의 경로에 맞게 수정
 
 class FollowerListPage extends StatelessWidget {
   final int? userId;
+  final User? currentUser;
 
-  FollowerListPage({required this.userId});
+  FollowerListPage({required this.userId, this.currentUser});
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +40,12 @@ class FollowerListPage extends StatelessWidget {
                 return ListTile(
                   title: Text(follower.user_name),
                   onTap: () {
-                    navigateToProfile(context, follower.user_name, follower.user_id);
+                    navigateToProfile(
+                      context,
+                      follower.user_name,
+                      follower.user_id,
+                      currentUser:  currentUser, // 현재 사용자 정보 가져오기
+                    );
                   },
                 );
               },
@@ -61,16 +66,17 @@ class FollowerListPage extends StatelessWidget {
     }
   }
 
-  void navigateToProfile(BuildContext context, String userName, int? userId) {
+  void navigateToProfile(BuildContext context, String userName, int? userId, {User? currentUser}) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ProfilePage(
-          currentUser: null, // 여기에 현재 사용자 정보를 전달하도록 수정
+          currentUser: currentUser,
           user_name: userName,
           userId: userId ?? 0,
         ),
       ),
     );
   }
+
 }

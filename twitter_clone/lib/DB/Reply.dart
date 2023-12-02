@@ -1,13 +1,19 @@
-class Reply 
-{
-  final int replyId;
+class Reply {
+  final int? replyId;
   final int commentId;
   final String content;
 
-  Reply
-  ({
-    required this.replyId,
+  Reply({
+    this.replyId,
     required this.commentId,
     required this.content,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'reply_id': replyId,
+      'comment_id': commentId,
+      'reply_content': content,
+    };
+  }
 }

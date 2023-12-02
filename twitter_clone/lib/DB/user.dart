@@ -1,4 +1,4 @@
-// models/user.dart
+// models/User.dart
 
 class User 
 {
@@ -61,4 +61,18 @@ class User
       following_count: map['following_count'],
     );
   }
+
+
+  static User? defaultUser() {
+    return User(
+      user_name: 'defaultUsername',
+      password: 'defaultPassword',
+      profile_message: 'Default profile message',
+      gender: 'Male',
+      birthday: '2000-01-01',
+      followers_count: 0,
+      following_count: 0,
+    );
+  }
+
 }
